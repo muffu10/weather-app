@@ -2,17 +2,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 import requests
 from .models import City
 from .forms import CityForm
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+API_KEY = os.getenv("WEATHER_API_KEY")
+
 
 def index(request, city_name=None):
-    url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=52041fec7ddca2e969ffb105b6751000'
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={{}}&units=metric&appid={API_KEY}'
     
     error_message = None
 
     if request.method == 'POST':
         form = CityForm(request.POST)
         if form.is_valid():
-            form.save()  # Now only valid city names will be saved
-            return redirect('home')
+            city_name = form.cleaned_data['name']
+            if City.objects.filter(name=city_name).exists():
+                error_message = 'City already added!'
+            else:
+                form.save()  # Now only valid city names will be saved
+                return redirect('city_weather', city_name=city_name)
         else:
             error_message='No Such City Exists!!'
 

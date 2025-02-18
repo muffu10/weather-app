@@ -2,6 +2,12 @@ from django.forms import ModelForm, TextInput
 from .models import City
 import requests
 from django import forms
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+API_KEY = os.getenv("WEATHER_API_KEY")
+
 
 class CityForm(ModelForm):
     class Meta:
@@ -11,7 +17,7 @@ class CityForm(ModelForm):
 
     def clean_name(self):
         city_name = self.cleaned_data['name']
-        url = 'http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=52041fec7ddca2e969ffb105b6751000'
+        url = f'http://api.openweathermap.org/data/2.5/weather?q={{}}&units=metric&appid={API_KEY}'
         r = requests.get(url.format(city_name)).json()
         
         if r.get('cod') != 200:  # If city is not found
