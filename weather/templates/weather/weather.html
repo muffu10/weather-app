@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.css" />
+    <style>
+        /* Sidebar Styling */
+        .sidebar {
+            width: 300px;
+            height: 100vh;
+            position: fixed;
+            right: -320px;
+            top: 0;
+            background-color: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+        }
+        .sidebar.active {
+            right: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-right: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Weather Display */
+        .weather-container, .error-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+        }
+        .weather-container {
+            background: linear-gradient(to bottom, #87CEFA, #4682B4);
+        }
+        .error-container {
+            background: linear-gradient(to bottom, #ff6b6b, #c0392b);
+        }
+
+        /* Welcome Message */
+        .welcome-container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            padding: 40px;
+            background-color: #f5f5f5;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: #2c3e50;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .menu-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navbar -->
+    <nav class="navbar">
+        <a class="navbar-item navbar-title" href="{% url 'home' %}">Weather App</a>
+        <button class="menu-button" onclick="toggleSidebar()">&#9776;</button>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2 class="title is-4">Add City</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="field">
+                <div class="control">
+                    {{ form.name }}
+                </div>
+            </div>
+            <div class="control">
+                <button class="button is-info is-fullwidth">Add City</button>
+            </div>
+        </form>
+
+        <hr>
+
+        <h2 class="title is-5">Saved Cities</h2>
+        <ul class="menu-list">
+            {% for city in cities %}
+                <li style="display: flex; justify-content: space-between; align-items: center;">
+                    <a href="{% url 'city_weather' city.name %}">{{ city.name }}</a>
+                    <form method="POST" action="{% url 'delete_city' city.name %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button class="delete-btn" type="submit">✖</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if error_message %}
+        <div class="error-container">
+            <h1 class="title">Error</h1>
+            <p class="is-size-4">{{ error_message }}</p>
+        </div>
+        {% elif weather_data %}
+        <div class="weather-container">
+            <h1 class="title">{{ weather_data.city }}</h1>
+            <img class="weather-icon" src="http://openweathermap.org/img/w/{{ weather_data.icon }}.png" alt="Weather Icon">
+            <h2 class="subtitle">{{ weather_data.temperature }}°C</h2>
+            <p class="is-size-4">{{ weather_data.description }}</p>
+        </div>
+        {% else %}
+        <div class="welcome-container">
+            <h1 class="title">Welcome to the Weather App</h1>
+            <p class="is-size-4">Please select or add a city to view the weather.</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+    </script>
+</body>
+</html>
